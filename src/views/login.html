@@ -10,7 +10,7 @@
     <input type="text" id="username">
     <label for="password">Password: </label>
     <input type="password" id="password">
-    <button id="login-btn" onclick="login()">Login</button>
+    <button  id="login-btn" onclick="login()">Login</button>
 </body>
 <script>
     const BASE_URL = 'http://localhost:3000';
@@ -29,15 +29,16 @@
         const response = await fetch(`${BASE_URL}/login`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                credentials: 'include'
+                'Content-Type': 'application/json'
             },
+            credentials: 'include',
             body: JSON.stringify({ username, password })
         });
 
         const data = await response.json();
 
         if (response.ok) {
+            window.location.href = 'users.html';
             console.log('Login successful!');
             
         } else {

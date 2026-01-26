@@ -5,7 +5,7 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: 'http://127.0.0.1:5500',
   credentials: true,
 }));
 app.use(cookieParser());
@@ -162,7 +162,7 @@ app.post('/login', (req, res) => {
   }
   if (username === reqUsername && password === reqPassword) {
     
-    res.setCookie(`key`,`PASSWORD`);
+    res.cookie(`key`,`PASSWORD`);
     return res.status(200).json({ message: 'Login successful' });
 
   
