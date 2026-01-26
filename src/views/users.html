@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Users Page</title>
+    <link rel="stylesheet" href="users.css">
+</head>
+<body>
+    <div class="input-group">
+        <label for="username">Username:</label>
+        <input id="username" type="text">
+        <button onclick="addUser()" id="add-btn">Add</button>
+    </div>
+    <ul id="user-list">
+        <!-- User items will be added here -->
+    </ul>
+    <script>
+        const BASE_URL = 'http://localhost:3000';
+        const userList = document.getElementById('user-list');
+        const FetchUsers = async () => { 
+                const response = await fetch(`${BASE_URL}/get-users`);
+                const data = await response.json();
+                console.log(response);
+                console.log(data);
+                if(response.ok) {
+                    data.map(user => {
+                        //const li = document.createElement('li');
+                        //li.textContent = user;
+                        //userList.appendChild(li);
+                        userList.innerHTML += `<li>${user}  <button onclick="editUser('${user}')">Edit</button>  <button onclick="deleteUser('${user}')">Delete</button></li>`;
+                    });
+            
+            }
+                else {
+                    console.error('Error fetching users:', data.message);
+                }
+        };
+        FetchUsers();
+
+        const addUser = async () => {
+            const usernameInput = document.getElementById('username');
+            const username = usernameInput.value;
+            if(!username) {
+                alert('Please enter a username');
+                return;
+            }
+            const response = await fetch(`${BASE_URL}/add-user`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name: username })
+            });
+            const data = await response.json();
+            if(response.ok) {
+                userList.innerHTML += `<li>${username}  <button onclick="editUser('${username}')">Edit</button>  <button onclick="deleteUser('${username}')">Delete</button></li>`;
+                usernameInput.value = '';
+            } else {
+                console.error('Error adding user:', data.message);
+            }
+        };
+
+
+        const deleteUser = async (user) => {
+            
+            const response = await fetch(`${BASE_URL}/delete-user/${user}`, {
+                method: 'DELETE',
+            });
+            const data = await response.json();
+            console.log(data);
+            if(response.ok) {
+              console.log("User deleted successfully");
+              userList.innerHTML = '';
+              FetchUsers();
+                 // Refresh the user list
+            } else {
+                console.error('Error deleting user:', data.message);
+            }
+        };
+
+
+        const editUser = async (user) => {
+            const newName = document.getElementById('username').value;
+            const response = await fetch(`${BASE_URL}/edit-user/${user}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name: newName })
+            });
+            const data = await response.json();
+            if(response.ok) {
+                userList.innerHTML = '';
+                FetchUsers(); // Refresh the user list
+            } else {
+                console.error('Error editing user:', data.message);
+            }
+        };
+
+
+    </script>
+</body> 
+</html>

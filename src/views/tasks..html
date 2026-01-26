@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Task Page</title>
+    <link rel="stylesheet" href="tasks.css" />
+  </head>
+  <body>
+    <label for="task-input">Task: </label>
+    <input id="task-input" type="text" />
+    <label for="task-status">Status: </label>
+    <select id="task-status">
+      <option value="false">Not Completed</option>
+      <option value="true">Completed</option>
+    </select>
+    <button id="add-btn" onclick="addTask()">Add</button>
+    <ul id="task-list">
+      <!-- Task items will be added here -->
+    </ul>
+    <script>
+        const BASE_URL = 'http://localhost:3000';
+        const taskList = document.getElementById('task-list');
+
+
+        const FetchTasks = async () => { 
+                const response = await fetch(`${BASE_URL}/get-tasks`);
+                const data = await response.json();
+                console.log(response);
+                console.log(data);
+                if(response.ok) {
+                    data.map(task => {
+                        taskList.innerHTML += `<li>${task.id}  ${task.title}-${task.completed ? 'Completed' : 'Not Completed'}<button onclick="editTask('${task.id}')">Edit</button>  <button onclick="deleteTask('${task.id}')">Delete</button></li>`;
+                    });
+            
+            }
+                else {
+                    console.error('Error fetching tasks:', data.message);
+                }
+        };
+
+
+        FetchTasks();
+
+
+        const addTask = async () => {
+            const taskInput = document.getElementById('task-input');
+            const taskStatus = document.getElementById('task-status');
+            const taskTitle = taskInput.value;
+            if(!taskTitle) {
+                alert('Please enter a task');
+                return;
+            }
+            
+            const response = await fetch(`${BASE_URL}/add-task`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({  title: taskTitle, completed: taskStatus.value === 'true' })
+            });
+            const data = await response.json();
+            if(response.ok) {
+                taskList.innerHTML += `<li>${data.newTask.id} - ${data.newTask.title} - ${data.newTask.completed ? 'Completed' : 'Not Completed'}<button onclick="editTask('${data.newTask.id}')">Edit</button>  <button onclick="deleteTask('${data.newTask.id}')">Delete</button></li>`;
+                taskInput.value = '';
+                
+               
+            } else {
+                console.error('Error adding task:', data.message);
+            }
+        };
+
+
+        const editTask = async (id) => {
+            
+            const newTitle = document.getElementById('task-input').value;
+            const newCompleted = document.getElementById('task-status').value === 'true';
+
+            const response = await fetch(`${BASE_URL}/edit-task/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ title: newTitle, completed: newCompleted })
+            });
+            const data = await response.json();
+            if(response.ok) {
+                // Update the task in the UI
+                taskList.innerHTML = '';
+                FetchTasks();
+            } else {
+                console.error('Error editing task:', data.message);
+            }
+        };
+
+
+        const deleteTask = async (id) => {
+            const response = await fetch(`${BASE_URL}/delete-task/${id}`, {
+                method: 'DELETE'
+            });
+            const data = await response.json();
+            if(response.ok) {
+                // Remove the task from the UI
+                taskList.innerHTML = '';
+                FetchTasks();
+            } else {
+                console.error('Error deleting task:', data.message);
+            }
+        };
+
+        
+    </script>
+  </body>
+</html>

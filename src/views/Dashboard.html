@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+            display: flex;
+            justify-content:  space-evenly;
+        }
+        li {
+            border: solid 1px hsl(252, 67%, 34%);
+            margin: 10px 0;
+            padding: 10px 20px;
+        }
+        a {
+            text-decoration: none;
+            color: #007BFF;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to the Dashboard</h1>
+    <ul id="stats-list">
+     
+    </ul>
+    <script>
+        async function fetchStats() {
+            const response = await fetch('http://localhost:3000/');
+            const data = await response.json();
+            console.log(data);
+            const ul = document.getElementById('stats-list');
+            ul.innerHTML = `
+                <li><a href="tasks.html">Tasks: ${data[0].tasks}</a></li>
+                <li><a href="users.html">Users: ${data[1].users}</a></li>
+                <li><a href="products.html">Products: ${data[2].products}</a></li>
+            `;
+        }
+        fetchStats();
+    </script>
+</body>
+</html>

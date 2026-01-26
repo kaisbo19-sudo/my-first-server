@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products Page</title>
+    <link rel="stylesheet" href="products.css">
+</head>
+<body>
+    <label for="products-input">Products: </label>
+    <input id="products-input" type="text">
+    <label for="price-input">Price:</label>
+    <input id="price-input" type="text">
+    <button onclick="addProduct()">Add</button>
+    <table id="products-table">
+        <thead>
+            <tr>
+                <th>Product Name</th>
+                <th>Price</th>
+            </tr>
+        </thead>
+        <tbody id="table-body">
+            <!-- Product items will be added here -->
+            <tr>
+                <td>Apple</td>
+                <td>$1.00</td>
+            </tr>
+            <tr>
+                <td>Bread</td>
+                <td>$2.50</td>
+            </tr>
+        </tbody>
+    </table>
+    <script>
+        const BASE_URL = 'http://localhost:3000';
+        // JavaScript code to handle adding products can be added here
+        const productsTable = document.getElementById('products-table');
+        const tableBody = document.getElementById('table-body')
+
+        async function getProducts() {
+           const response = await fetch(`${BASE_URL}/get-products`)
+              const data = await response.json();
+              console.log(response);
+              console.log(data);
+
+              data.map(product => 
+                tableBody.innerHTML += `<tr><td>${product.name}</td><td>$${product.price}</td> <button onclick="editProduct(${product.id})">Edit</button>/<button onclick="deleteProduct(${product.id})">Delete</button></tr>`
+              );
+        }
+
+
+        getProducts();
+
+        async function addProduct() {
+            const productInput = document.getElementById('products-input');
+            const priceInput = document.getElementById('price-input');
+            const productName = productInput.value;
+            const productPrice = priceInput.value;
+            if(!productName || !productPrice) {
+                alert('Please enter a product name and price');
+                return;
+            }
+            
+            const response = await fetch(`${BASE_URL}/add-product`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name: productName, price: Number(productPrice) })
+            });
+            const data = await response.json();
+            if(response.ok) {
+                tableBody.innerHTML += `<tr><td>${productName}</td><td>$${productPrice}</td> <td><button onclick="editProduct(${data.newProduct.id})">Edit</button>/<button onclick="deleteProduct(${data.newProduct.id})">Delete</button> </td></tr>`;
+                productInput.value = '';
+                priceInput.value = '';
+            } else {
+                console.error('Error adding product:', data.message);
+            }
+        }   
+
+        async function editProduct(id) {
+            // Functionality to edit a product can be implemented here
+            const productInput = document.getElementById('products-input').value;
+            const priceInput = document.getElementById('price-input').value;
+            const response = await fetch(`${BASE_URL}/update-product/${id}`,
+            {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+               
+             body: JSON.stringify({ name: productInput, price: Number(priceInput) })
+            });
+            const data = await response.json();
+            if(response.ok) {
+                tableBody.innerHTML = '';
+                getProducts(); // Refresh the product list
+            } else {
+                console.error('Error editing product:', data.message);
+            }
+        }
+
+        async function deleteProduct(id) {
+            const response = await fetch(`${BASE_URL}/delete-product/${id}`, {
+                method: 'DELETE',
+            });
+            const data = await response.json();
+            console.log(data);
+            if(response.ok) {
+              console.log("Product deleted successfully");
+              tableBody.innerHTML = '';
+              getProducts(); // Refresh the product list
+            } else {
+                console.error('Error deleting product:', data.message);
+            }
+        }
+
+        
+    </script>
+</body>
+</html>

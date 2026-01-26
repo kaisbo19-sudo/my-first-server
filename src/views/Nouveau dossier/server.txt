@@ -1,0 +1,66 @@
+const express = require('express')
+const app = express()
+const port = 3000
+const cors = require('cors');
+
+
+app.use(cors());
+app.use(express.static('public'));
+app.use(express.json());
+
+let tasks =[{ id: 1, title: 'Task One', completed: false },
+{ id: 2, title: 'Task Two', completed: true },
+{ id: 3, title: 'Task Three', completed: false }];
+let users = ['Admin', 'Guest', 'User1', 'User2'];
+app.get('/get-users', (req, res) => {
+  if (!users.length) {
+    return res.status(404).json({ message: 'No users found' })
+  }
+  else if (users.length > 10) {
+    return res.status(413).json({ message: 'Too many users' })
+  }
+
+  return res.status(200).json(users)
+})
+app.post('/add-user', (req, res) => {
+  const { name } = req.body;
+  if (!name) {
+    return res.status(400).json({ message: 'Name is required' })
+  }
+  users.push(name);
+  return res.status(201).json({ message: 'User added successfully' })
+})
+app.get('/get-tasks', (req, res) => {
+  if (!tasks.length) {
+    return res.status(404).json({ message: 'No tasks found' })
+  }
+  return res.status(200).json(tasks)
+})
+app.post('/add-task', (req, res) => {
+  const { title, completed } = req.body;
+  if (!title) {
+    return res.status(400).json({ message: 'Title is required' })
+  }
+  const newTask = { id: tasks.length + 1, title, completed };
+  tasks.push(newTask);
+  return res.status(201).json({ message: 'Task added successfully' })
+})
+app.put('/edit-task/:id', (req, res) => {
+  const { id } = req.params;
+  const { title, completed } = req.body;
+  const task = tasks.find(task => task.id == id);
+  if (!task) {
+    return res.status(404).json({ message: 'Task not found' })
+  }
+  task.title = title || task.title;
+  task.completed = completed !== undefined ? completed : task.completed;
+  return res.status(200).json({ message: 'Task updated successfully' })
+})
+app.delete('/delete-task/:id', (req, res) => {
+  const { id } = req.params;
+  tasks = tasks.filter(task => task.id != id);
+  return res.status(200).json({ message: 'Task deleted successfully' })
+})
+app.listen(port, () => {
+  console.log(`Example app listening on   http://localhost:${port}`)
+})
