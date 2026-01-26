@@ -2,9 +2,13 @@ const express = require('express')
 const app = express()
 const port = 3000
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 
-
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true,
+}));
+app.use(cookieParser());
 app.use(express.static('public'));
 app.use(express.json());
 
@@ -22,6 +26,8 @@ let products = [
 ];
 
 
+
+
 app.get('/get-users', (req, res) => {
   if (!users.length) {
     return res.status(404).json({ message: 'No users found' })
@@ -34,6 +40,10 @@ app.get('/get-users', (req, res) => {
 })
 
 app.post('/add-user', (req, res) => {
+  const key = req.headers.authorization;
+  if(key !== 'PASSWORD'){
+    return res.status(401).json({ message: 'Unauthorized' })
+  }  
   const { name } = req.body;
   if (!name) {
     return res.status(400).json({ message: 'Name is required' })
@@ -41,6 +51,7 @@ app.post('/add-user', (req, res) => {
   users.push(name);
   return res.status(201).json({ message: 'User added successfully' })
 })
+
 app.delete('/delete-user/:name', (req, res) => {
   const { name } = req.params;
   users = users.filter(user => user !== name);
@@ -138,6 +149,25 @@ app.get('/', (req, res) => {
   stats = [{ tasks: tasksnumber }, { users: usersnumber }, { products: productsnumber }];
   res.status(200).json(stats);
   
+});
+
+app.post('/login', (req, res) => {
+  
+  const reqUsername = 'admin';
+  const reqPassword = 'password123';
+  const { username, password } = req.body;
+  
+  if (!username || !password) {
+    return res.status(400).json({ message: 'Username and password are required' });
+  }
+  if (username === reqUsername && password === reqPassword) {
+    
+    res.setCookie(`key`,`PASSWORD`);
+    return res.status(200).json({ message: 'Login successful' });
+
+  
+  }
+  return res.status(401).json({ message: 'Invalid credentials' });
 });
 
 app.listen(port, () => {
